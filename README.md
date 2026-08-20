@@ -1,34 +1,24 @@
 # SIEM Dashboard
 
-## Project Status
-
-🚧 **Work in Progress**
-
-This project is currently under active development. Features, detection rules, visualizations, and documentation will continue to be added and refined as development progresses.
-
----
-
 ## Overview
 
-The SIEM Dashboard is a security monitoring platform designed to collect, normalize, correlate, and visualize security events from multiple log sources.
+The SIEM Dashboard is a cybersecurity portfolio project designed to simulate the core workflow of a Security Information and Event Management (SIEM) platform.
 
-The system ingests logs through syslog receivers and file parsers, converts events into a standardized format, stores events in a centralized database, and analyzes activity using event correlation rules.
+The system ingests Windows authentication logs, normalizes event data, stores events in SQLite, applies correlation rules to identify suspicious activity, generates alerts, and presents the results through an interactive analyst dashboard.
 
-Security incidents are displayed through an interactive dashboard that allows analysts to monitor events, investigate alerts, identify trends, and pivot between related activities.
-
-This project demonstrates the core functionality found in enterprise SIEM platforms such as Splunk, Elastic Stack, ArcSight, and Microsoft Sentinel.
+The project focuses on demonstrating SOC analyst workflows rather than recreating a full enterprise SIEM.
 
 ---
 
 ## Objectives
 
-- Collect logs from multiple sources
-- Normalize different log formats into a common schema
-- Store security events in a centralized database
-- Detect suspicious activity through event correlation
-- Visualize security events through an interactive dashboard
-- Implement severity-based alerting
-- Provide forensic investigation capabilities
+- Ingest Windows authentication logs
+- Normalize security events into a common schema
+- Store events in a centralized database
+- Detect suspicious activity through correlation rules
+- Generate severity-based alerts
+- Expose data through a REST API
+- Visualize events and alerts through an analyst dashboard
 
 ---
 
@@ -36,120 +26,84 @@ This project demonstrates the core functionality found in enterprise SIEM platfo
 
 ### Log Ingestion
 
-- Syslog receiver (UDP/TCP)
 - File-based log parsing
-- Support for multiple log formats
-- Pluggable parser architecture
+- Windows authentication log ingestion
 - Event normalization
+
+### Event Correlation
+
+- Rule-based detection engine
+- Repeated failed-login detection
+- Account lockout detection
+- Event grouping by username
+- Risk scoring through severity classification
+
+### Alerting
+
+- Medium-severity alerts
+- High-severity alerts
+- Alert storage in SQLite
 
 ### Backend API
 
 - FastAPI backend
 - REST API endpoints
-- Event querying
-- Statistical analysis
-- Authentication and authorization
+- Event retrieval
+- Alert retrieval
 
-### Event Correlation
+### Frontend Dashboard
 
-- Rule-based detection engine
-- Multi-event pattern matching
-- Risk scoring
-- Configurable detection rules
-
-### Data Visualization
-
-- Event timelines
-- Security dashboards
-- Event distribution charts
-- Activity heatmaps
-- Geographic attack visualization
-
-### Alerting
-
-- Severity classification
-- Threshold-based notifications
-- Alert grouping
-- Sensitivity tuning
-
-### Time-Based Analysis
-
-- Last-hour analysis
-- Last 24-hour analysis
-- Last 7-day analysis
-- Custom time-range analysis
-- Trend detection
-- Anomaly identification
-
-### Forensic Investigation
-
-- Event pivoting
-- Source IP investigation
-- User activity investigation
-- Full event inspection
-- Search functionality
-- CSV and JSON export
+- Dashboard metrics
+- Recent alerts table
+- Recent events table
+- Event filtering
+- Alert filtering
+- Alert severity visualization using Chart.js
 
 ---
 
-## Architecture
+## Detection Rules
+
+| Rule | Severity |
+| --- | --- |
+| 5 failed logins within 5 minutes | Medium |
+| 10 failed logins within 5 minutes | High |
+| Account lockout | High |
+
+---
+
+## SIEM Architecture
 
 ```text
-                Log Sources
-                       │
-        ┌──────────────┼──────────────┐
-        │              │              │
-        ▼              ▼              ▼
-
-    Syslog         Firewall        Application
-     Logs            Logs             Logs
-
-        └──────────────┼──────────────┘
-                       │
-                       ▼
-
-               Log Ingestion Layer
-
-                       │
-                       ▼
-
-               Normalization Engine
-
-                       │
-                       ▼
-
-                    Database
-
-                       │
-        ┌──────────────┼──────────────┐
-        │              │              │
-        ▼              ▼              ▼
-
-   Correlation      REST API      Alert Engine
-      Rules
-
-                       │
-                       ▼
-
-                Interactive Dashboard
+Windows Logs
+        ↓
+Log Ingestion
+        ↓
+Event Normalization
+        ↓
+SQLite Database
+        ↓
+Detection Rules
+        ↓
+Alerts
+        ↓
+FastAPI Backend
+        ↓
+React Dashboard
 ```
 
 ---
 
 ## Normalized Event Schema
 
-All events are transformed into a standardized format.
-
 ```json
 {
-    "timestamp": "",
-    "source": "",
-    "severity": "",
-    "event_type": "",
-    "source_ip": "",
-    "destination_ip": "",
-    "username": "",
-    "message": ""
+  "timestamp": "",
+  "username": "",
+  "source_ip": "",
+  "event_id": "",
+  "event_type": "",
+  "message": ""
 }
 ```
 
@@ -163,7 +117,15 @@ All events are transformed into a standardized format.
 | Database | SQLite |
 | Frontend | React |
 | Visualization | Chart.js |
-| Authentication | JWT |
+| Language | Python |
+
+---
+
+## Current Log Sources
+
+- Failed login events
+- Successful login events
+- Account lockout events
 
 ---
 
@@ -175,87 +137,46 @@ All events are transformed into a standardized format.
 git clone https://github.com/your-username/siem-dashboard.git
 ```
 
-### Create a virtual environment
+### Backend Setup
 
 ```bash
+cd backend
 python -m venv venv
-```
-
-### Activate the virtual environment
-
-**Linux/macOS**
-
-```bash
-source venv/bin/activate
 ```
 
 **Windows**
 
 ```bash
-venv\Scripts\activate
+.\venv\Scripts\python.exe -m pip install fastapi uvicorn
 ```
 
-### Install dependencies
+### Frontend Setup
 
 ```bash
-pip install -r requirements.txt
-```
-
-### Start the backend server
-
-```bash
-uvicorn app.main:app --reload
-```
-
-### Start the frontend
-
-```bash
+cd frontend
 npm install
-npm run dev
+```
+
+### Start the Backend
+
+```bash
+.\venv\Scripts\python.exe -m uvicorn main:app --reload
+```
+
+### Start the Frontend
+
+```bash
+npm.cmd run dev
 ```
 
 ---
 
-## Example Correlation Rule
+## Repository Documentation
 
-```yaml
-failed_login_correlation:
-
-  threshold: 5
-
-  window: 5m
-
-  severity: high
-```
-
----
-
-## Limitations
-
-- Detection quality depends on the quality of ingested logs.
-- Correlation rules require continuous tuning.
-- False positives can occur when thresholds are not properly adjusted.
-- Geographic mapping depends on accurate IP geolocation.
-- SIEM effectiveness depends on both the quality of collected data and the quality of detection rules.
-
----
-
-## SIEM Platform Comparison
-
-| Platform | Description |
-| --- | --- |
-| Splunk | Commercial SIEM platform |
-| Elastic Stack | Open-source analytics platform |
-| ArcSight | Enterprise security monitoring platform |
-| Microsoft Sentinel | Cloud-native SIEM platform |
-
----
-
-## References
-
-- RFC 5424 (Syslog Protocol)
-- OWASP Logging Cheat Sheet
-- MITRE ATT&CK Framework
-- FastAPI Documentation
-- React Documentation
-- Chart.js Documentation
+- 01-Architecture.md
+- 02-Log-Ingestion.md
+- 03-Event-Correlation.md
+- 04-Backend-API.md
+- 05-Frontend-Dashboard.md
+- 06-Alerting.md
+- Source-Code-Explanation.md
